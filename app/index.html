@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Job Portal</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="container mt-4">
+
+<h2>🔐 Login</h2>
+
+<div class="row mb-3">
+  <div class="col">
+    <input type="text" id="email" class="form-control" placeholder="Email">
+  </div>
+  <div class="col">
+    <input type="password" id="password" class="form-control" placeholder="Password">
+  </div>
+  <div class="col">
+    <button onclick="login()" class="btn btn-primary">Login</button>
+  </div>
+</div>
+
+<button onclick="logout()" class="btn btn-danger mb-3">Logout</button>
+
+<hr>
+
+<h2>💼 Jobs</h2>
+
+<button onclick="getJobs()" class="btn btn-success mb-3">Load Jobs</button>
+
+<div id="jobs" class="row"></div>
+
+<br>
+
+<button onclick="myApplications()" class="btn btn-warning">My Applications</button>
+
+<br><br>
+
+<div class="row mb-3">
+  <div class="col">
+    <input type="text" id="search" class="form-control" placeholder="Search job">
+  </div>
+  <div class="col">
+    <button onclick="searchJobs()" class="btn btn-info">Search</button>
+  </div>
+</div>
+
+<hr>
+
+<h2>📊 Dashboard</h2>
+<button onclick="loadDashboard()" class="btn btn-dark mb-3">Load Dashboard</button>
+<canvas id="chart"></canvas>
+
+<script>
+
+let token = "";
+
+// LOGIN
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const response = await fetch("http://127.0.0.1:8000/users/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({
+      username: email,
+      password: password
+    })
+  });
+
+  const data = await response.json();
+
+  if (response.ok) {
+    token = data.access_token;
+    alert("Login Successful ✅");
+  } else {
+    alert("Login Failed ❌");
+  }
+}
+
+// LOAD JOBS
+async function getJobs() {
+  const response = await fetch("http://127.0.0.1:8000/jobs/");
+  const data = await response.json();
+
+  let output = "";
+
+  data.forEach(job => {
+    output += `
+    <div class="col-md-4">
+      <div class="card mb-3 shadow">
+        <div class="card-body">
+          <h5>${job.title}</h5>
+          <p>${job.company}</p>
+          <button onclick="applyJob(${job.id})" class="btn btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById("jobs").innerHTML = output;
+}
+
+// APPLY JOB
+async function applyJob(job_id) {
+  const response = await fetch(`http://127.0.0.1:8000/apply/${job_id}`, {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  const data = await response.json();
+  alert(data.message || "Applied!");
+}
+
+// SEARCH JOB
+async function searchJobs() {
+  const search = document.getElementById("search").value;
+
+  const response = await fetch(`http://127.0.0.1:8000/jobs/?search=${search}`);
+  const data = await response.json();
+
+  let output = "";
+
+  data.forEach(job => {
+    output += `<p>${job.title} - ${job.company}</p>`;
+  });
+
+  document.getElementById("jobs").innerHTML = output;
+}
+
+// MY APPLICATIONS
+async function myApplications() {
+  const response = await fetch("http://127.0.0.1:8000/my-applications", {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  const data = await response.json();
+
+  console.log(data);
+  alert("Check console (F12) for applications");
+}
+
+// DASHBOARD
+async function loadDashboard() {
+  const res = await fetch("http://127.0.0.1:8000/dashboard");
+  const data = await res.json();
+
+  const labels = data.jobs_per_company.map(x => x.company);
+  const values = data.jobs_per_company.map(x => x.total_jobs);
+
+  new Chart(document.getElementById("chart"), {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Jobs per Company",
+        data: values
+      }]
+    }
+  });
+}
+
+// LOGOUT
+function logout() {
+  token = "";
+  alert("Logged out ✅");
+}
+
+</script>
+
+</body>
+</html>
