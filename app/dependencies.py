@@ -13,7 +13,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 # 🔐 Role Based Access
-def role_required(role: str):
+def (role: str):
     def role_checker(user=Depends(get_current_user)):
         if user.get("role") != role:
             raise HTTPException(status_code=403, detail="Access denied")
