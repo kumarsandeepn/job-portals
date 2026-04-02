@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException
 from app.auth import oauth2_scheme, verify_access_token
-from app.dependencies import get_current_user
+
 
 
 # 👤 Current User
@@ -15,9 +15,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 # 🔐 Role Based Access
 
+# 👇 पहले ये define करो
+def get_current_user():
+    return {"role": "admin"}   # temporary test (later JWT लगाएँगे)
+
+
+# 👇 फिर role_required
 def role_required(role: str):
     def role_checker(user = Depends(get_current_user)):
-        if user.role != role:
+        if user["role"] != role:
             raise HTTPException(status_code=403, detail="Not authorized")
         return user
     return role_checker
