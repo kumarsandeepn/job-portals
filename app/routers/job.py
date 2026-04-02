@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
 from app.schemas import JobCreate
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/jobs", tags=["Jobs"])
 @router.post("/")
 def create_job(job: JobCreate,
                db: Session = Depends(get_db),
-               user=Depends(role_required("recruiter"))):
+               user=Depends("recruiter")):
 
     new_job = models.Job(
         title=job.title,
