@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
 from app.schemas import JobCreate
-from app.dependencies import get_current_user, 
+from app.dependencies import get_current_user 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 
