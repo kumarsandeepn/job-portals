@@ -25,3 +25,8 @@ def create_job(
     db.commit()
 
     return {"message": "Job created"}
+
+@router.get("/")
+def get_jobs(db: Session = Depends(get_db)):
+    jobs = db.query(models.Job).all()
+    return jobs
