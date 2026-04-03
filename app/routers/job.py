@@ -12,24 +12,16 @@ router = APIRouter(prefix="/jobs", tags=["Jobs"])
 @router.post("/")
 def create_job(
     job: JobCreate,
-    db: Session = Depends(get_db),
-    user = Depends(role_required("recruiter"))
+    db: Session = Depends(get_db)
 ):
     new_job = models.Job(
         title=job.title,
         description=job.description,
         company=job.company,
-        owner_id=user["user_id"]
+        owner_id=1   # temporary fix
     )
 
     db.add(new_job)
     db.commit()
 
     return {"message": "Job created"}
-
-
-# ✅ GET JOBS
-@router.get("/")
-def get_jobs(db: Session = Depends(get_db)):
-    jobs = db.query(models.Job).all()
-    return jobs
