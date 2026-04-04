@@ -1,29 +1,32 @@
 from fastapi import Depends, HTTPException
-from app.auth import oauth2_scheme, verify_access_token
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+
+SECRET_KEY = "mysecretkey"
+ALGORITHM = "HS256"
+
+# ✅ token extractor
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
+# ✅ verify token
+def verify_access_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid Token")
 
-# 👤 Current User
+
+# ✅ get current user
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    payload = verify_access_token(token)
-
-    if payload is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    return payload
+    return verify_access_token(token)
 
 
-# 🔐 Role Based Access
-
-# 👇 पहले ये define करो
-def get_current_user():
-    return {"role": "admin"}   # temporary test (later JWT लगाएँगे)
-
-
-# 👇 फिर role_required
+# ✅ role check
 def role_required(role: str):
     def role_checker(user = Depends(get_current_user)):
-        if user["role"] != role:
+        if user.get("role") != role:
             raise HTTPException(status_code=403, detail="Not authorized")
         return user
     return role_checker
