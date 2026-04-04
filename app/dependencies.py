@@ -20,13 +20,16 @@ def verify_access_token(token: str):
 
 # ✅ get current user
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    return verify_access_token(token)
-
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 # ✅ role check
 def role_required(role: str):
-    def role_checker(user = Depends(get_current_user)):
+    def checker(user = Depends(get_current_user)):
         if user.get("role") != role:
             raise HTTPException(status_code=403, detail="Not authorized")
         return user
-    return role_checker
+    return checker
