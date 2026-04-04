@@ -1,15 +1,32 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app import models
-from app.schemas import JobCreate
-from app.dependencies import role_required
+from app import models, schemas
+from app.dependencies import get_current_user, role_required
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 
-# ✅ CREATE JOB (Only recruiter)
- ✅ ONLY recruiter allowed
+# ============================
+# ✅ GET ALL JOBS (Public)
+# ============================
+@router.get("/")
+def get_jobs(db: Session = Depends(get_db)):
+    jobs = db.query(models.Job).all()
+    return jobs
+
+
+# ============================
+# ✅ GET CURRENT USER (Protected)
+# ============================
+@router.get("/me")
+def get_current_user_data(user = Depends(get_current_user)):
+    return {"user": user}
+
+
+# ============================
+# ✅ CREATE JOB (Recruiter Only)
+# ============================
 @router.post("/")
 def create_job(
     job: schemas.JobCreate,
@@ -26,9 +43,4 @@ def create_job(
     db.add(new_job)
     db.commit()
 
-    return {"message": "Job created"}
-
-@router.get("/")
-def get_jobs(db: Session = Depends(get_db)):
-    jobs = db.query(models.Job).all()
-    return jobs
+    return {"message": "Job created successfully"}
