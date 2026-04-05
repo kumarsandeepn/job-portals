@@ -57,6 +57,7 @@ def login(
     }
 
 
+
 # ============================
 # ✅ TEST AUTH
 # ============================
@@ -66,3 +67,27 @@ def test_auth(user = Depends(get_current_user)):
         "message": "Auth working",
         "user": user
     }
+
+from app import schemas
+
+@router.post("/signup")
+def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    
+    # check user exists
+    existing_user = db.query(models.User).filter(models.User.email == user.email).first()
+    
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User already exists")
+
+    hashed_password = pwd_context.hash(user.password)
+
+    new_user = models.User(
+        email=user.email,
+        password=hashed_password,
+        role=user.role
+    )
+
+    db.add(new_user)
+    db.commit()
+
+    return {"message": "User created successfully"}
