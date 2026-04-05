@@ -73,12 +73,12 @@ from app import schemas
 @router.post("/signup")
 def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     
-    # check user exists
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
     
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
 
+    # 🔥 SAFE HASH
     hashed_password = pwd_context.hash(user.password)
 
     new_user = models.User(
@@ -89,5 +89,6 @@ def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     db.add(new_user)
     db.commit()
+    db.refresh(new_user)
 
     return {"message": "User created successfully"}
