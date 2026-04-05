@@ -62,3 +62,11 @@ def apply_job(data: schemas.ApplyJob, db: Session = Depends(get_db), user=Depend
 def get_applications(db: Session = Depends(get_db)):
     apps = db.query(models.Application).all()
     return apps
+
+@router.get("/my-jobs")
+def get_my_jobs(
+    db: Session = Depends(get_db),
+    user = Depends(role_required("recruiter"))
+):
+    jobs = db.query(models.Job).filter(models.Job.owner_id == user["user_id"]).all()
+    return jobs
