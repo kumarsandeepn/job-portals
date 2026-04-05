@@ -44,3 +44,21 @@ def create_job(
     db.commit()
 
     return {"message": "Job created successfully"}
+
+@router.post("/apply")
+def apply_job(data: schemas.ApplyJob, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    
+    new_app = models.Application(
+        user_id=user["user_id"],
+        job_id=data.job_id
+    )
+
+    db.add(new_app)
+    db.commit()
+
+    return {"message": "Applied successfully"}
+
+@router.get("/applications")
+def get_applications(db: Session = Depends(get_db)):
+    apps = db.query(models.Application).all()
+    return apps

@@ -2,10 +2,10 @@ from pydantic import BaseModel, EmailStr, constr
 
 
 class UserCreate(BaseModel):
-    name: str
     email: EmailStr
-    password: constr(min_length=6, max_length=72)
+    password: str
     role: str
+    
 
 
 class UserLogin(BaseModel):
@@ -54,3 +54,5 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     password: Optional[constr(min_length=6, max_length=72)] = None
     phone: Optional[str] = None
+
+class ApplyJob(BaseModel): job_id:int
