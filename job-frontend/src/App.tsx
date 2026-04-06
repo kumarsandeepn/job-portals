@@ -5,22 +5,33 @@ function App() {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
+    alert("Clicked 🔥"); // debug
+
     const formData = new URLSearchParams();
     formData.append("username", email);
     formData.append("password", password);
 
-    const res = await fetch("https://job-portals-new.onrender.com/auth/login", {
-      method: "POST",
-      body: formData
-    });
+    try {
+      const res = await fetch("https://job-portals-new.onrender.com/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData
+      });
 
-    const data = await res.json();
+      const data = await res.json();
+      console.log(data);
 
-    if (data.access_token) {
-      localStorage.setItem("token", data.access_token);
-      alert("Login Successful 🚀");
-    } else {
-      alert("Login Failed ❌");
+      if (data.access_token) {
+        localStorage.setItem("token", data.access_token);
+        alert("Login Successful 🚀");
+      } else {
+        alert("Login Failed ❌");
+      }
+    } catch (error) {
+      console.log(error);
+      alert("API Error ❌");
     }
   };
 
@@ -30,6 +41,7 @@ function App() {
 
       <input
         placeholder="Email"
+        value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
       <br /><br />
@@ -37,11 +49,12 @@ function App() {
       <input
         type="password"
         placeholder="Password"
+        value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
       <br /><br />
 
-      <button onClick={() => handleLogin()}>Login</button>
+      <button onClick={handleLogin}>Login</button>
     </div>
   );
 }
